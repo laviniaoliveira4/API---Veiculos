@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD de Produtos</title>
+    <script>
+        async function getProducts() {
+            const response = await fetch('/products');
+            const products = await response.json();
+            let productList = document.getElementById("product-list");
+            productList.innerHTML = products.map(product => 
+                `<li>${product.name} - R$${product.price.toFixed(2)} 
+                 <button onclick="deleteProduct(${product.id})">Delete</button>
+                 <button onclick="editProduct(${product.id}, '${product.name}', ${product.price})">Edit</button>
+                 </li>`
+            ).join('');
+        }
+
+        async function addProduct() {
+            const name = document.getElementById("name").value;
+            const price = parseFloat(document.getElementById("price").value);
+            await fetch('/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price })
+            });
+            getProducts();
+        }
+
+        async function deleteProduct(id) {
+            await fetch(`/products/${id}`, { method: 'DELETE' });
+            getProducts();
+        }
+
+        function editProduct(id, name, price) {
+            document.getElementById("product-id").value = id;
+            document.getElementById("name").value = name;
+            document.getElementById("price").value = price;
+        }
+
+        async function updateProduct() {
+            const id = document.getElementById("product-id").value;
+            const name = document.getElementById("name").value;
+            const price = parseFloat(document.getElementById("price").value);
+            await fetch(`/products/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price })
+            });
+            getProducts();
+        }
+    </script>
+</head>
+<body onload="getProducts()">
+    <h1>CRUD de Produtos</h1>
+    <ul id="product-list"></ul>
+
+    <input type="hidden" id="product-id">
+    <input type="text" id="name" placeholder="Nome">
+    <input type="number" id="price" placeholder="Preço">
+    <button onclick="addProduct()">Adicionar</button>
+    <button onclick="updateProduct()">Atualizar</button>
+</body>
+</html>
